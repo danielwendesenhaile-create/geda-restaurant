@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Geda Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0F0A06;
+  --surface:#1A1108;
+  --surface2:#231710;
+  --border:#2E1F10;
+  --border2:#3D2914;
+  --gold:#C9871E;
+  --gold-dim:#8B5E10;
+  --gold-pale:rgba(201,135,30,0.10);
+  --gold-pale2:rgba(201,135,30,0.18);
+  --espresso:#5C3D22;
+  --text:#F0E8DC;
+  --text-muted:#9A7A5A;
+  --text-dim:#6A5040;
+  --green:#22C55E;
+  --green-bg:rgba(34,197,94,0.12);
+  --red:#EF4444;
+  --red-bg:rgba(239,68,68,0.12);
+  --blue:#3B82F6;
+  --blue-bg:rgba(59,130,246,0.10);
+  --amber:#F59E0B;
+  --amber-bg:rgba(245,158,11,0.12);
+  --sidebar-w:240px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* ── LAYOUT ── */
+.shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+
+/* ── SIDEBAR ── */
+.sidebar-logo{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
+.logo-row{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.logo-name{font-size:15px;font-weight:700;color:var(--text);line-height:1.1}
+.logo-sub{font-size:11px;color:var(--text-muted);margin-top:1px}
+.sidebar-nav{padding:12px 8px;flex:1}
+.nav-group-label{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);padding:10px 8px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;transition:all 0.15s;color:var(--text-muted);font-size:13.5px;font-weight:500;border:none;background:none;width:100%;text-align:left}
+.nav-item svg{flex-shrink:0;opacity:0.7}
+.nav-item:hover{background:var(--gold-pale);color:var(--text)}
+.nav-item.active{background:var(--gold-pale2);color:var(--gold)}
+.nav-item.active svg{opacity:1}
+.nav-item .badge{margin-left:auto;background:var(--gold);color:#1A0A00;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px}
+.sidebar-footer{padding:14px 16px;border-top:1px solid var(--border)}
+.live-badge{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--green)}
+.live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.4)}50%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
+
+/* ── TOP BAR ── */
+.topbar{height:58px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--surface);flex-shrink:0}
+.topbar-title{font-size:16px;font-weight:600;color:var(--text)}
+.topbar-sub{font-size:12px;color:var(--text-muted);margin-top:1px}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.tb-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:all 0.15s}
+.tb-btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text-muted)}
+.tb-btn-ghost:hover{border-color:var(--gold-dim);color:var(--text)}
+.tb-btn-primary{background:var(--gold);color:#1A0A00;font-weight:600}
+.tb-btn-primary:hover{background:#E8A835}
+
+/* ── PAGE CONTENT ── */
+.page{padding:24px;display:none;flex-direction:column;gap:24px;flex:1}
+.page.active{display:flex}
+
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.stat-label{font-size:11.5px;color:var(--text-muted);font-weight:500;letter-spacing:0.04em;display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.stat-val{font-size:26px;font-weight:700;color:var(--text);line-height:1}
+.stat-change{font-size:12px;margin-top:6px;display:flex;align-items:center;gap:4px}
+.up{color:var(--green)} .down{color:var(--red)} .neu{color:var(--text-muted)}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-title{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.card-body{padding:20px}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-dim);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:13px 14px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--gold-pale)}
+.tbl .emoji-col{font-size:1.5rem;width:64px;text-align:center}
+.tbl-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;display:block;border:1px solid var(--border2)}
+.tbl-thumb-wrap{width:48px;height:48px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+
+/* ── IMAGE UPLOAD ── */
+.img-upload-zone{border:2px dashed var(--border2);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;position:relative;overflow:hidden}
+.img-upload-zone:hover{border-color:var(--gold-dim);background:var(--gold-pale)}
+.img-upload-zone.has-img{padding:0;border-style:solid;border-color:var(--gold-dim)}
+.img-upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-preview{width:100%;height:140px;object-fit:cover;border-radius:10px;display:block}
+.img-upload-label{font-size:12.5px;color:var(--text-muted);margin-top:6px;pointer-events:none}
+.img-upload-icon{font-size:1.8rem;margin-bottom:4px;opacity:0.5}
+.img-remove-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.65);color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;z-index:2;font-family:inherit}
+
+/* ── BADGES ── */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600}
+.chip-green{background:var(--green-bg);color:var(--green)}
+.chip-red{background:var(--red-bg);color:var(--red)}
+.chip-amber{background:var(--amber-bg);color:var(--amber)}
+.chip-blue{background:var(--blue-bg);color:var(--blue)}
+.chip-gold{background:var(--gold-pale2);color:var(--gold)}
+.chip-muted{background:rgba(255,255,255,0.05);color:var(--text-muted)}
+
+/* ── TOGGLE ── */
+.toggle{width:36px;height:20px;border-radius:99px;border:none;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0}
+.toggle.on{background:var(--green)}
+.toggle.off{background:var(--border2)}
+.toggle::after{content:'';position:absolute;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s}
+.toggle.on::after{left:18px}
+.toggle.off::after{left:2px}
+
+/* ── ICON BUTTON ── */
+.icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.15s;flex-shrink:0}
+.icon-btn:hover{border-color:var(--gold-dim);color:var(--text);background:var(--gold-pale)}
+.icon-btn.danger:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+
+/* ── FORM ELEMENTS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:12.5px;font-weight:500;color:var(--text-muted)}
+.form-input{padding:9px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;font-size:13.5px;font-family:inherit;color:var(--text);outline:none;width:100%;transition:border-color 0.2s}
+.form-input:focus{border-color:var(--gold)}
+.form-input::placeholder{color:var(--text-dim)}
+select.form-input option{background:var(--surface2);color:var(--text)}
+textarea.form-input{resize:vertical;min-height:80px}
+
+/* ── CHECKBOX GROUP ── */
+.check-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.check-pill{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;border:1px solid var(--border2);cursor:pointer;font-size:12px;font-weight:500;color:var(--text-muted);transition:all 0.15s;user-select:none}
+.check-pill input{display:none}
+.check-pill.checked{background:var(--gold-pale2);border-color:var(--gold-dim);color:var(--gold)}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;transition:transform 0.25s;transform:translateY(20px)}
+.modal-bg.open .modal{transform:translateY(0)}
+.modal-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700;color:var(--text)}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* ── BTN ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all 0.15s}
+.btn-gold{background:var(--gold);color:#1A0A00}
+.btn-gold:hover{background:#E8A835}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text-muted)}
+.btn-ghost:hover{border-color:var(--gold-dim);color:var(--text)}
+.btn-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,0.25)}
+.btn-red:hover{background:rgba(239,68,68,0.22)}
+.btn-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.25)}
+
+/* ── SEARCH ── */
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:7px 12px}
+.search-bar input{background:none;border:none;outline:none;font-family:inherit;font-size:13.5px;color:var(--text);flex:1;min-width:0}
+.search-bar input::placeholder{color:var(--text-dim)}
+
+/* ── SECTION DIVIDER ── */
+.sec-divider{font-size:11.5px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-dim);padding:6px 0;margin-bottom:4px;border-bottom:1px solid var(--border);margin-top:8px}
+
+/* ── ACTIVITY FEED ── */
+.feed-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.feed-item:last-child{border-bottom:none}
+.feed-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.feed-text{font-size:13px;color:var(--text-muted);line-height:1.5}
+.feed-text strong{color:var(--text);font-weight:500}
+.feed-time{font-size:11.5px;color:var(--text-dim);margin-top:3px}
+
+/* ── INFO BLOCKS ── */
+.info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);gap:16px}
+.info-row:last-child{border-bottom:none}
+.info-key{font-size:12.5px;color:var(--text-muted);font-weight:500;flex-shrink:0;min-width:130px}
+.info-val{font-size:13.5px;color:var(--text);text-align:right;line-height:1.5}
+.info-val a{color:var(--gold);text-decoration:none}
+
+/* ── HOURS TABLE ── */
+.hours-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:12px}
+.hours-row:last-child{border-bottom:none}
+.hours-day{font-size:13px;font-weight:500;color:var(--text);min-width:90px}
+.hours-inputs{display:flex;align-items:center;gap:8px}
+.hours-input{padding:5px 9px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;font-size:12.5px;color:var(--text);font-family:inherit;width:90px;outline:none}
+.hours-input:focus{border-color:var(--gold)}
+.hours-sep{color:var(--text-dim);font-size:12px}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .sidebar{position:fixed;left:-240px;top:0;bottom:0;z-index:90;transition:left 0.28s;box-shadow:4px 0 20px rgba(0,0,0,0.5)}
+  .sidebar.open{left:0}
+  .form-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .page{padding:16px}
+  .topbar{padding:0 16px}
+}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border2);border-radius:11px;padding:12px 16px;font-size:13.5px;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,0.5);transform:translateX(120%);opacity:0;transition:all 0.3s;pointer-events:all;min-width:240px}
+.toast.show{transform:translateX(0);opacity:1}
+.toast-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
+.toast-success .toast-icon{background:var(--green-bg);color:var(--green)}
+.toast-error   .toast-icon{background:var(--red-bg);color:var(--red)}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.empty-icon{font-size:3rem;opacity:0.3;margin-bottom:12px}
+
+/* ── PROGRESS BAR ── */
+.prog-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:8px}
+.prog-fill{height:100%;border-radius:99px;background:var(--gold);transition:width 0.4s}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginScreen" style="position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;text-align:center">
+    <div style="width:52px;height:52px;background:var(--gold);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 16px">☕</div>
+    <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px">Geda Admin</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:28px">Sign in to manage the restaurant</div>
+    <div style="display:flex;flex-direction:column;gap:12px;text-align:left">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="loginEmail" class="form-input" placeholder="admin@example.com" style="width:100%"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" style="width:100%" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <div id="loginErr" style="display:none;background:var(--red-bg);color:var(--red);border-radius:8px;padding:8px 12px;font-size:13px;text-align:left"></div>
+      <button onclick="doLogin()" class="btn btn-gold" style="width:100%;justify-content:center;padding:12px;font-size:15px;margin-top:4px">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-row">
+      <div class="logo-icon">☕</div>
+      <div>
+        <div class="logo-name">Geda Admin</div>
+        <div class="logo-sub">Restaurant Dashboard</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-group-label">Overview</div>
+    <button class="nav-item active" onclick="goto('dashboard',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+
+    <div class="nav-group-label" style="margin-top:8px">Manage</div>
+    <button class="nav-item" onclick="goto('menu-mgr',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Menu Items
+      <span class="badge" id="menuCount">0</span>
+    </button>
+    <button class="nav-item" onclick="goto('categories',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+      Categories
+    </button>
+    <button class="nav-item" onclick="goto('specials',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Daily Specials
+    </button>
+
+    <div class="nav-group-label" style="margin-top:8px">Settings</div>
+    <button class="nav-item" onclick="goto('restaurant-info',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Restaurant Info
+    </button>
+    <button class="nav-item" onclick="goto('hours',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Opening Hours
+    </button>
+    <button class="nav-item" onclick="goto('delivery',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      Delivery Zones
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="live-badge"><div class="live-dot"></div>Restaurant Online</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:6px">Ajman, UAE · +971 54 569 4593</div>
+    <button onclick="doLogout()" class="nav-item" style="margin-top:10px;color:var(--red);width:100%">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<div class="main">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="icon-btn" id="menuToggle" onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+        <div class="topbar-sub" id="topbarSub">Geda Cafe & Restaurant · Ajman, UAE</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a href="geda.html" target="_blank" class="tb-btn tb-btn-ghost" style="text-decoration:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        View Site
+      </a>
+      <button class="tb-btn tb-btn-primary" id="topSaveBtn" onclick="saveAll()" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Changes
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: DASHBOARD ══ -->
+  <div class="page active" id="page-dashboard">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Total Menu Items
+        </div>
+        <div class="stat-val" id="stat-total">0</div>
+        <div class="stat-change neu">across all categories</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Available Now
+        </div>
+        <div class="stat-val up" id="stat-available">0</div>
+        <div class="stat-change up">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+          items visible to customers
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          Unavailable
+        </div>
+        <div class="stat-val down" id="stat-unavailable">0</div>
+        <div class="stat-change down">items hidden from menu</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C9871E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Daily Specials
+        </div>
+        <div class="stat-val" style="color:var(--gold)" id="stat-specials">0</div>
+        <div class="stat-change neu">featured on homepage</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <!-- Category Breakdown -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            Menu by Category
+          </div>
+        </div>
+        <div class="card-body" id="catBreakdown"></div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Quick Actions
+          </div>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-gold" onclick="openAddModal()" style="justify-content:flex-start;width:100%">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add New Menu Item
+          </button>
+          <button class="btn btn-ghost" onclick="goto('specials',document.querySelector('[onclick*=specials]'))" style="justify-content:flex-start;width:100%">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Manage Daily Specials
+          </button>
+          <button class="btn btn-ghost" onclick="goto('hours',document.querySelector('[onclick*=hours]'))" style="justify-content:flex-start;width:100%">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Update Opening Hours
+          </button>
+          <a href="https://wa.me/971545694593" target="_blank" class="btn btn-green" style="text-decoration:none;justify-content:flex-start">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.557 4.12 1.529 5.849L.057 23.428a.5.5 0 0 0 .617.608l5.763-1.503A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.793 9.793 0 0 1-5.013-1.381l-.36-.213-3.717.97.992-3.617-.236-.371A9.789 9.789 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+            Open WhatsApp Orders
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Recent Activity
+        </div>
+      </div>
+      <div class="card-body" id="activityFeed"></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: MENU MANAGER ══ -->
+  <div class="page" id="page-menu-mgr">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div class="search-bar" style="flex:1;max-width:340px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-dim);flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="menuSearch" placeholder="Search menu items…" oninput="renderMenuTable()"/>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select class="form-input" id="filterCat" onchange="renderMenuTable()" style="width:auto;padding:7px 10px">
+          <option value="">All Categories</option>
+          <option value="mains">Main Dishes</option>
+          <option value="stews">Stews & Wots</option>
+          <option value="veg">Vegetarian</option>
+          <option value="coffee">Coffee & Drinks</option>
+          <option value="sides">Sides</option>
+        </select>
+        <select class="form-input" id="filterStatus" onchange="renderMenuTable()" style="width:auto;padding:7px 10px">
+          <option value="">All Status</option>
+          <option value="available">Available</option>
+          <option value="unavailable">Unavailable</option>
+        </select>
+        <button class="btn btn-gold" onclick="openAddModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Item
+        </button>
+      </div>
+    </div>
+
+    <div class="card" style="overflow-x:auto">
+      <table class="tbl" id="menuTable">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Badges</th>
+            <th>Status</th>
+            <th>Special</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="menuTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: CATEGORIES ══ -->
+  <div class="page" id="page-categories">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          Menu Categories
+        </div>
+        <button class="btn btn-gold" onclick="openCatModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Category
+        </button>
+      </div>
+      <div class="card-body">
+        <table class="tbl">
+          <thead>
+            <tr><th>Name</th><th>Slug</th><th>Items</th><th>Display Order</th><th>Visible</th><th></th></tr>
+          </thead>
+          <tbody id="catTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: DAILY SPECIALS ══ -->
+  <div class="page" id="page-specials">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Daily Specials
+        </div>
+        <div class="chip chip-amber">Featured on homepage</div>
+      </div>
+      <div class="card-body">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px">Toggle items to feature them as today's specials on the restaurant website.</p>
+        <div id="specialsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: RESTAURANT INFO ══ -->
+  <div class="page" id="page-restaurant-info">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Restaurant Information
+        </div>
+        <button class="btn btn-gold" onclick="saveRestaurantInfo()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Restaurant Name</label>
+            <input class="form-input" id="ri-name" value="Geda Cafe and Restaurant"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tagline</label>
+            <input class="form-input" id="ri-tagline" value="Authentic Ethiopian Cuisine"/>
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Full Address</label>
+            <input class="form-input" id="ri-address" value="Osama Bin Zaid St, Al Hamidiyah 1, Ajman, UAE"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone / WhatsApp</label>
+            <input class="form-input" id="ri-phone" value="+971 54 569 4593"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" id="ri-email" value="info@gedarestaurant.ae"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Google Maps Latitude</label>
+            <input class="form-input" id="ri-lat" value="25.3842378"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Google Maps Longitude</label>
+            <input class="form-input" id="ri-lng" value="55.4515151"/>
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Short Description</label>
+            <textarea class="form-input" id="ri-desc" rows="3">Traditional flavors crafted with love, served fresh in the heart of Ajman. From our kitchen to your table — a culinary journey through Ethiopia.</textarea>
+          </div>
+        </div>
+        <div class="sec-divider" style="margin-top:20px">Certifications & Features</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px">
+          <label class="check-pill checked"><input type="checkbox" checked onchange="this.closest('.check-pill').classList.toggle('checked',this.checked)"> Halal Certified</label>
+          <label class="check-pill checked"><input type="checkbox" checked onchange="this.closest('.check-pill').classList.toggle('checked',this.checked)"> Free Delivery</label>
+          <label class="check-pill checked"><input type="checkbox" checked onchange="this.closest('.check-pill').classList.toggle('checked',this.checked)"> Open 24/7</label>
+          <label class="check-pill checked"><input type="checkbox" checked onchange="this.closest('.check-pill').classList.toggle('checked',this.checked)"> Dine-in Available</label>
+          <label class="check-pill"><input type="checkbox" onchange="this.closest('.check-pill').classList.toggle('checked',this.checked)"> Reservations</label>
+          <label class="check-pill checked"><input type="checkbox" checked onchange="this.closest('.check-pill').classList.toggle('checked',this.checked)"> WhatsApp Orders</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Card -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Live Preview</div></div>
+      <div class="card-body">
+        <div style="background:var(--surface2);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:18px;font-weight:700;color:var(--text)" id="prev-name">Geda Cafe and Restaurant</div>
+          <div style="font-size:13px;color:var(--gold)" id="prev-tagline">Authentic Ethiopian Cuisine</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span id="prev-address">Osama Bin Zaid St, Al Hamidiyah 1, Ajman, UAE</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z"/></svg>
+            <span id="prev-phone">+971 54 569 4593</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: OPENING HOURS ══ -->
+  <div class="page" id="page-hours">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Opening Hours
+        </div>
+        <button class="btn btn-gold" onclick="saveHours()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save Hours
+        </button>
+      </div>
+      <div class="card-body">
+        <div style="background:var(--green-bg);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:10px 14px;margin-bottom:18px;font-size:13px;color:var(--green);display:flex;align-items:center;gap:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+          Restaurant is currently set to Open 24/7. Adjust hours below per day if needed.
+        </div>
+        <div id="hoursTable"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: DELIVERY ══ -->
+  <div class="page" id="page-delivery">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          Delivery Zones & Fees
+        </div>
+        <button class="btn btn-gold" onclick="addZone()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Zone
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="card-body">
+          <table class="tbl">
+            <thead><tr><th>Zone / Area</th><th>Estimated Time</th><th>Delivery Fee</th><th>Active</th><th></th></tr></thead>
+            <tbody id="zonesTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ══ MODAL: ADD / EDIT ITEM ══ -->
+<div class="modal-bg" id="itemModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add Menu Item</div>
+      <button class="icon-btn" onclick="closeModal('itemModal')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId"/>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Item Name *</label>
+          <input class="form-input" id="m-name" placeholder="e.g. Gada Special Kitfo"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dish Photo</label>
+          <div class="img-upload-zone" id="imgUploadZone" onclick="document.getElementById('m-photo-file').click()">
+            <input type="file" id="m-photo-file" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)"/>
+            <div id="img-placeholder">
+              <div class="img-upload-icon">📷</div>
+              <div class="img-upload-label">Tap to upload photo</div>
+            </div>
+            <img id="img-preview" class="img-preview" style="display:none" alt="Dish preview"/>
+            <button class="img-remove-btn" id="img-remove-btn" style="display:none" type="button" onclick="removePhoto(event)">✕ Remove</button>
+          </div>
+          <input type="hidden" id="m-emoji" value=""/>
+          <input type="hidden" id="m-photo" value=""/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-input" id="m-cat">
+            <option value="mains">Main Dishes</option>
+            <option value="stews">Stews & Wots</option>
+            <option value="veg">Vegetarian</option>
+            <option value="coffee">Coffee & Drinks</option>
+            <option value="sides">Sides</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price (AED) *</label>
+          <input class="form-input" type="number" id="m-price" placeholder="0" min="0" step="0.5"/>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Description</label>
+          <textarea class="form-input" id="m-desc" placeholder="Describe the dish…" rows="2"></textarea>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Badges</label>
+          <div class="check-group" id="badgeGroup">
+            <label class="check-pill"><input type="checkbox" value="halal"> Halal</label>
+            <label class="check-pill"><input type="checkbox" value="veg"> Vegan</label>
+            <label class="check-pill"><input type="checkbox" value="spicy"> Spicy</label>
+            <label class="check-pill"><input type="checkbox" value="popular"> Popular</label>
+            <label class="check-pill"><input type="checkbox" value="new"> New</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-input" id="m-status">
+            <option value="available">Available</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Daily Special</label>
+          <select class="form-input" id="m-special">
+            <option value="0">No</option>
+            <option value="1">Yes — Feature today</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('itemModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveItem()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Item
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: DELETE CONFIRM ══ -->
+<div class="modal-bg" id="deleteModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--red)">Delete Item</div>
+      <button class="icon-btn" onclick="closeModal('deleteModal')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--text-muted)">Are you sure you want to delete <strong id="deleteItemName" style="color:var(--text)"></strong>? This cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-red" onclick="confirmDelete()">Delete Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ADD CATEGORY ══ -->
+<div class="modal-bg" id="catModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">Add Category</div>
+      <button class="icon-btn" onclick="closeModal('catModal')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Category Name *</label>
+        <input class="form-input" id="cat-name" placeholder="e.g. Desserts"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Slug (URL key)</label>
+        <input class="form-input" id="cat-slug" placeholder="e.g. desserts"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input class="form-input" type="number" id="cat-order" placeholder="6" min="1"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('catModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveCategory()">Add Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   FIREBASE
+══════════════════════════════════════════════════ */
+firebase.initializeApp({
+  apiKey: "AIzaSyD8_MhngRstkJFqUhVG2ySyjWUOekZYf4c",
+  authDomain: "geda-restaurant.firebaseapp.com",
+  projectId: "geda-restaurant",
+  storageBucket: "geda-restaurant.firebasestorage.app",
+  messagingSenderId: "628075043941",
+  appId: "1:628075043941:web:982c6b09b908878115ba8c"
+});
+const db   = firebase.firestore();
+const auth = firebase.auth();
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pwd   = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.style.display = 'none';
+  if (!email || !pwd) { errEl.textContent = 'Please enter email and password.'; errEl.style.display = 'block'; return; }
+  auth.signInWithEmailAndPassword(email, pwd).catch(err => {
+    errEl.textContent = 'Invalid email or password.';
+    errEl.style.display = 'block';
+  });
+}
+
+function doLogout() { auth.signOut(); }
+
+auth.onAuthStateChanged(user => {
+  const screen = document.getElementById('loginScreen');
+  if (user) {
+    screen.style.display = 'none';
+    loadMenuFromFirestore();
+  } else {
+    screen.style.display = 'flex';
+  }
+});
+
+function loadMenuFromFirestore() {
+  db.collection('menu').get().then(snapshot => {
+    if (!snapshot.empty) {
+      const map = {};
+      snapshot.forEach(doc => { map[doc.id] = {id: doc.id, ...doc.data()}; });
+      const merged = DEFAULT_MENU.map(def => map[def.id] ? {...def, ...map[def.id]} : def);
+      Object.values(map).forEach(item => {
+        if (!DEFAULT_MENU.find(d => d.id === item.id)) merged.push(item);
+      });
+      menuData = merged;
+    } else {
+      seedFirestore();
+      return;
+    }
+    renderDashboard();
+    renderMenuTable();
+  }).catch(e => { console.error('Firestore load error:', e); renderDashboard(); });
+}
+
+function seedFirestore() {
+  const batch = db.batch();
+  DEFAULT_MENU.forEach(item => batch.set(db.collection('menu').doc(item.id), item));
+  batch.commit().then(() => {
+    menuData = JSON.parse(JSON.stringify(DEFAULT_MENU));
+    renderDashboard();
+    renderMenuTable();
+  });
+}
+
+function saveMenuToFirestore() {
+  const batch = db.batch();
+  menuData.forEach(item => batch.set(db.collection('menu').doc(item.id), item));
+  batch.commit().catch(e => console.error('Firestore save error:', e));
+}
+
+function deleteMenuItemFromFirestore(id) {
+  db.collection('menu').doc(id).delete().catch(e => console.error('Firestore delete error:', e));
+}
+
+/* ══════════════════════════════════════════════════
+   DATA STORE
+══════════════════════════════════════════════════ */
+const DEFAULT_MENU = [
+  {id:'k1', cat:'mains',  name:'Gada Special Kitfo',          price:45, emoji:'🥩', desc:'Minced lean beef seasoned with mitmita & niter kibbeh. Served warm on soft injera.',                              badges:['halal','popular'], available:true, special:true},
+  {id:'k2', cat:'mains',  name:'Tibs Special',                price:48, emoji:'🍖', desc:'Tender sautéed beef cubes with onions, jalapeños & rosemary. Dry or wet style.',                                 badges:['halal','popular'], available:true, special:false},
+  {id:'k3', cat:'mains',  name:'Doro Wot',                    price:52, emoji:'🍗', desc:'Slow-simmered chicken legs in deep berbere sauce with a hard-boiled egg.',                                        badges:['halal'],           available:true, special:true},
+  {id:'k4', cat:'mains',  name:'Gored Gored',                 price:50, emoji:'🥩', desc:'Cubed raw beef tossed in mitmita & niter kibbeh. A bold classic for adventurous diners.',                       badges:['halal','spicy'],   available:true, special:false},
+  {id:'k5', cat:'mains',  name:'Zilzil Tibs',                 price:50, emoji:'🍖', desc:'Long-strip beef sautéed with garlic, ginger & green peppers on a sizzling pan.',                                 badges:['halal','new'],     available:true, special:false},
+  {id:'s1', cat:'stews',  name:'Shiro Wot',                   price:28, emoji:'🫕', desc:'Slow-cooked chickpea flour stew with berbere & caramelized onions.',                                             badges:['veg','popular'],   available:true, special:false},
+  {id:'s2', cat:'stews',  name:'Misir Wot',                   price:26, emoji:'🫘', desc:'Red lentils braised in spiced berbere sauce. A comforting vegan favourite.',                                     badges:['veg'],             available:true, special:false},
+  {id:'s3', cat:'stews',  name:'Tikel Gomen',                 price:24, emoji:'🥦', desc:'Cabbage, carrots & potatoes cooked with turmeric, garlic & ginger.',                                            badges:['veg'],             available:true, special:false},
+  {id:'s4', cat:'stews',  name:'Lamb Alicha',                 price:55, emoji:'🍲', desc:'Tender lamb slow-cooked in mild turmeric sauce — gentle spice, deep flavor.',                                   badges:['halal'],           available:true, special:false},
+  {id:'v1', cat:'veg',    name:'Special Beyaynetu',            price:35, emoji:'🫓', desc:'Colourful assortment of lentil, chickpea & vegetable stews on a large injera.',                                 badges:['veg','popular'],   available:true, special:true},
+  {id:'v2', cat:'veg',    name:'Fossolia',                    price:22, emoji:'🫛', desc:'Ethiopian-style green beans & carrots sautéed with onion, garlic & tomato.',                                    badges:['veg'],             available:true, special:false},
+  {id:'v3', cat:'veg',    name:'Atkilt Wot',                  price:22, emoji:'🥕', desc:'Mixed vegetable curry with potato, carrot & cabbage in mild spiced sauce.',                                     badges:['veg'],             available:true, special:false},
+  {id:'v4', cat:'veg',    name:'Gomen Besiga',                price:40, emoji:'🥬', desc:'Collard greens slow-cooked with beef — a hearty side turned main dish.',                                        badges:['halal'],           available:true, special:false},
+  {id:'c1', cat:'coffee', name:'Traditional Ethiopian Coffee', price:12, emoji:'☕', desc:'Freshly roasted & brewed in the authentic three-round ceremony.',                                                badges:['popular'],         available:true, special:true},
+  {id:'c2', cat:'coffee', name:'Macchiato (Natala)',           price:10, emoji:'☕', desc:'Ethiopian-style espresso topped with a generous dollop of fresh milk foam.',                                    badges:['popular'],         available:true, special:false},
+  {id:'c3', cat:'coffee', name:'Himbasha Spiced Tea',         price:8,  emoji:'🍵', desc:'Aromatic Ethiopian cardamom & cinnamon tea in a traditional clay cup.',                                         badges:[],                 available:true, special:false},
+  {id:'c4', cat:'coffee', name:'Fresh Mango Juice',           price:14, emoji:'🥭', desc:'Cold-pressed seasonal mango. No added sugar.',                                                                   badges:['veg','new'],       available:true, special:false},
+  {id:'c5', cat:'coffee', name:'Tamarind Lemonade',           price:12, emoji:'🍋', desc:'Tangy house-made tamarind with fresh lemon and a touch of ginger.',                                            badges:['veg'],             available:true, special:false},
+  {id:'si1',cat:'sides',  name:'Plain Injera (2 pcs)',         price:8,  emoji:'🫓', desc:'Extra soft sourdough injera, freshly baked in-house.',                                                          badges:['veg'],             available:true, special:false},
+  {id:'si2',cat:'sides',  name:'Ayib (Fresh Cheese)',         price:10, emoji:'🧀', desc:'House-made Ethiopian cottage cheese. Mild and creamy.',                                                         badges:['veg'],             available:true, special:false},
+  {id:'si3',cat:'sides',  name:'Salata (House Salad)',        price:12, emoji:'🥗', desc:'Tomato, cucumber & red onion tossed in lemon & olive oil.',                                                    badges:['veg'],             available:true, special:false},
+];
+
+const DEFAULT_CATS = [
+  {slug:'mains',  name:'Main Dishes',      order:1, visible:true},
+  {slug:'stews',  name:'Stews & Wots',     order:2, visible:true},
+  {slug:'veg',    name:'Vegetarian',        order:3, visible:true},
+  {slug:'coffee', name:'Coffee & Drinks',  order:4, visible:true},
+  {slug:'sides',  name:'Sides',            order:5, visible:true},
+];
+
+const DEFAULT_HOURS = [
+  {day:'Monday',    open:'00:00', close:'23:59', closed:false},
+  {day:'Tuesday',   open:'00:00', close:'23:59', closed:false},
+  {day:'Wednesday', open:'00:00', close:'23:59', closed:false},
+  {day:'Thursday',  open:'00:00', close:'23:59', closed:false},
+  {day:'Friday',    open:'00:00', close:'23:59', closed:false},
+  {day:'Saturday',  open:'00:00', close:'23:59', closed:false},
+  {day:'Sunday',    open:'00:00', close:'23:59', closed:false},
+];
+
+const DEFAULT_ZONES = [
+  {zone:'Al Hamidiyah',  time:'20–30 min', fee:5,  active:true},
+  {zone:'Al Nuaimiya',   time:'25–35 min', fee:7,  active:true},
+  {zone:'Al Rawdah',     time:'20–30 min', fee:5,  active:true},
+  {zone:'Al Jurf',       time:'30–40 min', fee:8,  active:true},
+  {zone:'Al Rashidiya',  time:'35–45 min', fee:10, active:true},
+  {zone:'Al Mowaihat',   time:'30–40 min', fee:8,  active:false},
+];
+
+const DEFAULT_ACTIVITY = [
+  {text:'Menu item <strong>Zilzil Tibs</strong> was added', time:'Today, 10:24 AM', color:'#C9871E'},
+  {text:'Opening hours updated to <strong>24/7</strong>', time:'Yesterday, 3:10 PM', color:'#3B82F6'},
+  {text:'<strong>Gada Special Kitfo</strong> marked as Daily Special', time:'Yesterday, 11:05 AM', color:'#F59E0B'},
+  {text:'Price updated: <strong>Doro Wot</strong> → 52 AED', time:'2 days ago', color:'#22C55E'},
+  {text:'New menu item <strong>Fresh Mango Juice</strong> added', time:'3 days ago', color:'#C9871E'},
+];
+
+function load(key, def) {
+  try { const v = localStorage.getItem('geda_'+key); return v ? JSON.parse(v) : JSON.parse(JSON.stringify(def)); } catch(e) { return JSON.parse(JSON.stringify(def)); }
+}
+function save(key, val) { localStorage.setItem('geda_'+key, JSON.stringify(val)); }
+
+let menuData   = load('menu',   DEFAULT_MENU);
+let catData    = load('cats',   DEFAULT_CATS);
+let hoursData  = load('hours',  DEFAULT_HOURS);
+let zonesData  = load('zones',  DEFAULT_ZONES);
+let activityData = load('activity', DEFAULT_ACTIVITY);
+
+/* ══════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════ */
+const PAGE_META = {
+  'dashboard':       {title:'Dashboard',          sub:'Overview of Geda Restaurant'},
+  'menu-mgr':        {title:'Menu Manager',        sub:'Add, edit and toggle menu items'},
+  'categories':      {title:'Categories',          sub:'Manage menu sections'},
+  'specials':        {title:'Daily Specials',      sub:'Feature items on the homepage'},
+  'restaurant-info': {title:'Restaurant Info',     sub:'Name, address and contact details'},
+  'hours':           {title:'Opening Hours',       sub:'Set weekly operating hours'},
+  'delivery':        {title:'Delivery Zones',      sub:'Areas and delivery fees'},
+};
+
+function goto(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if (btn) btn.classList.add('active');
+  const meta = PAGE_META[page] || {};
+  document.getElementById('topbarTitle').textContent = meta.title || page;
+  document.getElementById('topbarSub').textContent = meta.sub || '';
+  document.getElementById('topSaveBtn').style.display = 'none';
+  document.getElementById('sidebar').classList.remove('open');
+  if (page === 'dashboard')       renderDashboard();
+  if (page === 'menu-mgr')        renderMenuTable();
+  if (page === 'categories')      renderCategories();
+  if (page === 'specials')        renderSpecials();
+  if (page === 'hours')           renderHoursTable();
+  if (page === 'delivery')        renderZones();
+}
+
+/* ══════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════ */
+function renderDashboard() {
+  const total = menuData.length;
+  const avail = menuData.filter(m => m.available).length;
+  const unavail = total - avail;
+  const specials = menuData.filter(m => m.special).length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-available').textContent = avail;
+  document.getElementById('stat-unavailable').textContent = unavail;
+  document.getElementById('stat-specials').textContent = specials;
+  document.getElementById('menuCount').textContent = total;
+
+  const catCounts = {};
+  catData.forEach(c => { catCounts[c.slug] = menuData.filter(m => m.cat === c.slug).length; });
+
+  document.getElementById('catBreakdown').innerHTML = catData.map(c => {
+    const count = catCounts[c.slug] || 0;
+    const pct = total > 0 ? Math.round((count/total)*100) : 0;
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:13px;color:var(--text)">${c.name}</span>
+        <span style="font-size:12px;color:var(--text-muted)">${count} items · ${pct}%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('activityFeed').innerHTML = activityData.map(a => `
+    <div class="feed-item">
+      <div class="feed-dot" style="background:${a.color}"></div>
+      <div>
+        <div class="feed-text">${a.text}</div>
+        <div class="feed-time">${a.time}</div>
+      </div>
+    </div>`).join('') || '<div class="empty"><div class="empty-icon">📋</div><p>No recent activity</p></div>';
+}
+
+/* ══════════════════════════════════════════════════
+   MENU TABLE
+══════════════════════════════════════════════════ */
+const CAT_NAMES = {mains:'Main Dishes', stews:'Stews & Wots', veg:'Vegetarian', coffee:'Coffee & Drinks', sides:'Sides'};
+const BADGE_COLORS = {halal:'chip-green', veg:'chip-green', spicy:'chip-red', popular:'chip-amber', new:'chip-blue'};
+const BADGE_LABELS = {halal:'Halal', veg:'Vegan', spicy:'Spicy', popular:'Popular', new:'New'};
+
+function renderMenuTable() {
+  const q     = (document.getElementById('menuSearch').value || '').toLowerCase();
+  const cat   = document.getElementById('filterCat').value;
+  const stat  = document.getElementById('filterStatus').value;
+  const items = menuData.filter(m => {
+    if (q && !m.name.toLowerCase().includes(q) && !(m.desc||'').toLowerCase().includes(q)) return false;
+    if (cat && m.cat !== cat) return false;
+    if (stat === 'available' && !m.available) return false;
+    if (stat === 'unavailable' && m.available) return false;
+    return true;
+  });
+
+  document.getElementById('menuTbody').innerHTML = items.length ? items.map(m => `
+    <tr>
+      <td class="emoji-col">${m.photo ? `<img class="tbl-thumb" src="${m.photo}" alt="${m.name}"/>` : `<div class="tbl-thumb-wrap">${m.emoji||'🍽️'}</div>`}</td>
+      <td>
+        <div style="font-size:13.5px;font-weight:600;color:var(--text)">${m.name}</div>
+        <div style="font-size:12px;color:var(--text-dim);max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.desc||''}</div>
+      </td>
+      <td><span class="chip chip-muted">${CAT_NAMES[m.cat]||m.cat}</span></td>
+      <td style="font-weight:700;color:var(--gold)">${m.price} AED</td>
+      <td>${(m.badges||[]).map(b=>`<span class="chip ${BADGE_COLORS[b]||'chip-muted'}" style="margin-right:3px">${BADGE_LABELS[b]||b}</span>`).join('')}</td>
+      <td>
+        <button class="toggle ${m.available?'on':'off'}" onclick="toggleAvailable('${m.id}')" title="${m.available?'Click to hide':'Click to show'}"></button>
+      </td>
+      <td>
+        <button class="toggle ${m.special?'on':'off'}" onclick="toggleSpecial('${m.id}')" title="Daily special"></button>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="icon-btn" onclick="openEditModal('${m.id}')" title="Edit">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="icon-btn danger" onclick="openDeleteModal('${m.id}')" title="Delete">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('')
+    : `<tr><td colspan="8"><div class="empty"><div class="empty-icon">🍽️</div><p>No items found</p></div></td></tr>`;
+}
+
+function toggleAvailable(id) {
+  const item = menuData.find(m => m.id === id);
+  if (!item) return;
+  item.available = !item.available;
+  saveMenuToFirestore();
+  renderMenuTable();
+  renderDashboard();
+  addActivity(`<strong>${item.name}</strong> marked as ${item.available ? 'Available' : 'Unavailable'}`, item.available ? '#22C55E' : '#EF4444');
+  toast(item.available ? `${item.name} is now visible` : `${item.name} hidden from menu`, item.available ? 'success' : 'error');
+}
+
+function toggleSpecial(id) {
+  const item = menuData.find(m => m.id === id);
+  if (!item) return;
+  item.special = !item.special;
+  saveMenuToFirestore();
+  renderMenuTable();
+  renderDashboard();
+  toast(item.special ? `${item.name} added to specials` : `${item.name} removed from specials`, 'success');
+}
+
+/* ══════════════════════════════════════════════════
+   ADD / EDIT MODAL
+══════════════════════════════════════════════════ */
+function resetPhotoUI() {
+  document.getElementById('img-preview').src = '';
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('img-placeholder').style.display = '';
+  document.getElementById('img-remove-btn').style.display = 'none';
+  document.getElementById('imgUploadZone').classList.remove('has-img');
+  document.getElementById('m-photo').value = '';
+  document.getElementById('m-photo-file').value = '';
+}
+
+function setPhotoUI(src) {
+  document.getElementById('img-preview').src = src;
+  document.getElementById('img-preview').style.display = 'block';
+  document.getElementById('img-placeholder').style.display = 'none';
+  document.getElementById('img-remove-btn').style.display = 'block';
+  document.getElementById('imgUploadZone').classList.add('has-img');
+  document.getElementById('m-photo').value = src;
+}
+
+function handlePhotoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => setPhotoUI(e.target.result);
+  reader.readAsDataURL(file);
+}
+
+function removePhoto(event) {
+  event.stopPropagation();
+  resetPhotoUI();
+}
+
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = 'Add Menu Item';
+  document.getElementById('editId').value = '';
+  document.getElementById('m-name').value = '';
+  document.getElementById('m-emoji').value = '';
+  document.getElementById('m-cat').value = 'mains';
+  document.getElementById('m-price').value = '';
+  document.getElementById('m-desc').value = '';
+  document.getElementById('m-status').value = 'available';
+  document.getElementById('m-special').value = '0';
+  resetPhotoUI();
+  document.querySelectorAll('#badgeGroup .check-pill').forEach(p => {
+    p.classList.remove('checked');
+    p.querySelector('input').checked = false;
+  });
+  openModal('itemModal');
+}
+
+function openEditModal(id) {
+  const item = menuData.find(m => m.id === id);
+  if (!item) return;
+  document.getElementById('modalTitle').textContent = 'Edit Menu Item';
+  document.getElementById('editId').value = id;
+  document.getElementById('m-name').value = item.name;
+  document.getElementById('m-emoji').value = item.emoji || '';
+  document.getElementById('m-cat').value = item.cat;
+  document.getElementById('m-price').value = item.price;
+  document.getElementById('m-desc').value = item.desc || '';
+  document.getElementById('m-status').value = item.available ? 'available' : 'unavailable';
+  document.getElementById('m-special').value = item.special ? '1' : '0';
+  if (item.photo) { setPhotoUI(item.photo); } else { resetPhotoUI(); }
+  document.querySelectorAll('#badgeGroup .check-pill').forEach(p => {
+    const val = p.querySelector('input').value;
+    const checked = (item.badges || []).includes(val);
+    p.classList.toggle('checked', checked);
+    p.querySelector('input').checked = checked;
+  });
+  openModal('itemModal');
+}
+
+function saveItem() {
+  const name  = document.getElementById('m-name').value.trim();
+  const price = parseFloat(document.getElementById('m-price').value);
+  if (!name) { toast('Item name is required', 'error'); return; }
+  if (isNaN(price) || price < 0) { toast('Enter a valid price', 'error'); return; }
+
+  const badges = [...document.querySelectorAll('#badgeGroup input:checked')].map(i => i.value);
+  const id = document.getElementById('editId').value;
+  const isEdit = !!id;
+  const photo = document.getElementById('m-photo').value || '';
+
+  const payload = {
+    id: id || 'item_' + Date.now(),
+    name,
+    emoji: document.getElementById('m-emoji').value || '🍽️',
+    photo,
+    cat:   document.getElementById('m-cat').value,
+    price,
+    desc:  document.getElementById('m-desc').value.trim(),
+    badges,
+    available: document.getElementById('m-status').value === 'available',
+    special:   document.getElementById('m-special').value === '1',
+  };
+
+  if (isEdit) {
+    const idx = menuData.findIndex(m => m.id === id);
+    if (idx !== -1) menuData[idx] = payload;
+    addActivity(`<strong>${name}</strong> was updated`, '#3B82F6');
+    toast(`${name} updated`, 'success');
+  } else {
+    menuData.push(payload);
+    addActivity(`New item <strong>${name}</strong> added`, '#C9871E');
+    toast(`${name} added to menu`, 'success');
+  }
+
+  saveMenuToFirestore();
+  closeModal('itemModal');
+  renderMenuTable();
+  renderDashboard();
+}
+
+/* ══════════════════════════════════════════════════
+   DELETE
+══════════════════════════════════════════════════ */
+let deleteTarget = null;
+
+function openDeleteModal(id) {
+  deleteTarget = id;
+  const item = menuData.find(m => m.id === id);
+  document.getElementById('deleteItemName').textContent = item ? item.name : id;
+  openModal('deleteModal');
+}
+
+function confirmDelete() {
+  const item = menuData.find(m => m.id === deleteTarget);
+  menuData = menuData.filter(m => m.id !== deleteTarget);
+  saveMenuToFirestore();
+  deleteMenuItemFromFirestore(deleteTarget);
+  closeModal('deleteModal');
+  renderMenuTable();
+  renderDashboard();
+  if (item) {
+    addActivity(`<strong>${item.name}</strong> was deleted`, '#EF4444');
+    toast(`${item.name} deleted`, 'error');
+  }
+  deleteTarget = null;
+}
+
+/* ══════════════════════════════════════════════════
+   CATEGORIES
+══════════════════════════════════════════════════ */
+function renderCategories() {
+  document.getElementById('catTbody').innerHTML = catData.sort((a,b) => a.order - b.order).map(c => `
+    <tr>
+      <td style="font-weight:600;color:var(--text)">${c.name}</td>
+      <td><span class="chip chip-muted">${c.slug}</span></td>
+      <td style="color:var(--text-muted)">${menuData.filter(m=>m.cat===c.slug).length} items</td>
+      <td style="color:var(--text-muted)">${c.order}</td>
+      <td><button class="toggle ${c.visible?'on':'off'}" onclick="toggleCatVisible('${c.slug}')"></button></td>
+      <td>
+        <button class="icon-btn danger" onclick="deleteCategory('${c.slug}')" title="Delete">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+function toggleCatVisible(slug) {
+  const c = catData.find(x => x.slug === slug);
+  if (c) { c.visible = !c.visible; save('cats', catData); renderCategories(); toast(`Category ${c.name} ${c.visible?'shown':'hidden'}`, 'success'); }
+}
+
+function deleteCategory(slug) {
+  if (menuData.some(m => m.cat === slug)) { toast('Remove all items in this category first', 'error'); return; }
+  catData = catData.filter(c => c.slug !== slug);
+  save('cats', catData);
+  renderCategories();
+  toast('Category deleted', 'success');
+}
+
+function openCatModal() { openModal('catModal'); }
+
+function saveCategory() {
+  const name  = document.getElementById('cat-name').value.trim();
+  const slug  = document.getElementById('cat-slug').value.trim() || name.toLowerCase().replace(/\s+/g,'-');
+  const order = parseInt(document.getElementById('cat-order').value) || catData.length + 1;
+  if (!name) { toast('Category name required', 'error'); return; }
+  if (catData.find(c => c.slug === slug)) { toast('Category slug already exists', 'error'); return; }
+  catData.push({slug, name, order, visible:true});
+  save('cats', catData);
+  closeModal('catModal');
+  renderCategories();
+  toast(`Category "${name}" added`, 'success');
+  document.getElementById('cat-name').value = '';
+  document.getElementById('cat-slug').value = '';
+  document.getElementById('cat-order').value = '';
+}
+
+/* ══════════════════════════════════════════════════
+   DAILY SPECIALS
+══════════════════════════════════════════════════ */
+function renderSpecials() {
+  document.getElementById('specialsList').innerHTML = menuData.map(m => `
+    <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:1.8rem">${m.emoji}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13.5px;font-weight:600;color:var(--text)">${m.name}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${CAT_NAMES[m.cat]||m.cat} · ${m.price} AED</div>
+      </div>
+      ${m.special ? '<span class="chip chip-amber">Featured</span>' : ''}
+      <button class="toggle ${m.special?'on':'off'}" onclick="toggleSpecial('${m.id}');renderSpecials()"></button>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   HOURS
+══════════════════════════════════════════════════ */
+function renderHoursTable() {
+  document.getElementById('hoursTable').innerHTML = hoursData.map((h,i) => `
+    <div class="hours-row">
+      <div class="hours-day">${h.day}</div>
+      <div class="hours-inputs">
+        <input class="hours-input" type="time" value="${h.open}" id="ho-${i}" ${h.closed?'disabled':''}/>
+        <span class="hours-sep">to</span>
+        <input class="hours-input" type="time" value="${h.close}" id="hc-${i}" ${h.closed?'disabled':''}/>
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-muted);cursor:pointer;margin-left:auto">
+        <input type="checkbox" ${h.closed?'checked':''} onchange="toggleDayClosed(${i},this.checked)"/> Closed
+      </label>
+    </div>`).join('');
+}
+
+function toggleDayClosed(idx, closed) {
+  hoursData[idx].closed = closed;
+  renderHoursTable();
+}
+
+function saveHours() {
+  hoursData.forEach((h,i) => {
+    const openEl  = document.getElementById('ho-'+i);
+    const closeEl = document.getElementById('hc-'+i);
+    if (openEl && !h.closed)  h.open  = openEl.value;
+    if (closeEl && !h.closed) h.close = closeEl.value;
+  });
+  save('hours', hoursData);
+  addActivity('Opening hours were updated', '#3B82F6');
+  toast('Opening hours saved', 'success');
+}
+
+/* ══════════════════════════════════════════════════
+   DELIVERY ZONES
+══════════════════════════════════════════════════ */
+function renderZones() {
+  document.getElementById('zonesTbody').innerHTML = zonesData.map((z,i) => `
+    <tr>
+      <td style="font-weight:600;color:var(--text)">${z.zone}</td>
+      <td style="color:var(--text-muted)">${z.time}</td>
+      <td><span class="chip chip-gold">${z.fee} AED</span></td>
+      <td><button class="toggle ${z.active?'on':'off'}" onclick="toggleZone(${i})"></button></td>
+      <td>
+        <button class="icon-btn danger" onclick="deleteZone(${i})" title="Delete">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+function toggleZone(i) { zonesData[i].active = !zonesData[i].active; save('zones', zonesData); renderZones(); toast('Delivery zone updated', 'success'); }
+function deleteZone(i) { zonesData.splice(i,1); save('zones', zonesData); renderZones(); toast('Zone removed', 'success'); }
+
+function addZone() {
+  const zone = prompt('Enter zone/area name:');
+  if (!zone) return;
+  const fee = parseFloat(prompt('Delivery fee (AED):') || '0');
+  const time = prompt('Estimated time (e.g. 25–35 min):') || '30 min';
+  zonesData.push({zone, time, fee, active:true});
+  save('zones', zonesData);
+  renderZones();
+  toast(`Zone "${zone}" added`, 'success');
+}
+
+/* ══════════════════════════════════════════════════
+   RESTAURANT INFO
+══════════════════════════════════════════════════ */
+function saveRestaurantInfo() {
+  const info = {
+    name:    document.getElementById('ri-name').value,
+    tagline: document.getElementById('ri-tagline').value,
+    address: document.getElementById('ri-address').value,
+    phone:   document.getElementById('ri-phone').value,
+    email:   document.getElementById('ri-email').value,
+    lat:     document.getElementById('ri-lat').value,
+    lng:     document.getElementById('ri-lng').value,
+    desc:    document.getElementById('ri-desc').value,
+  };
+  save('restaurantInfo', info);
+  document.getElementById('prev-name').textContent = info.name;
+  document.getElementById('prev-tagline').textContent = info.tagline;
+  document.getElementById('prev-address').textContent = info.address;
+  document.getElementById('prev-phone').textContent = info.phone;
+  addActivity('Restaurant info was updated', '#3B82F6');
+  toast('Restaurant info saved', 'success');
+}
+
+/* ══════════════════════════════════════════════════
+   ACTIVITY LOG
+══════════════════════════════════════════════════ */
+function addActivity(text, color) {
+  activityData.unshift({text, color, time:'Just now'});
+  if (activityData.length > 20) activityData = activityData.slice(0,20);
+  save('activity', activityData);
+}
+
+/* ══════════════════════════════════════════════════
+   MODAL HELPERS
+══════════════════════════════════════════════════ */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
+});
+
+document.querySelectorAll('#badgeGroup .check-pill').forEach(p => {
+  p.addEventListener('click', () => {
+    const cb = p.querySelector('input');
+    cb.checked = !cb.checked;
+    p.classList.toggle('checked', cb.checked);
+  });
+});
+
+/* ══════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════ */
+function toast(msg, type = 'success') {
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<div class="toast-icon">${type === 'success' ? '✓' : '✕'}</div><span>${msg}</span>`;
+  wrap.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2800);
+}
+
+/* ══════════════════════════════════════════════════
+   SAVE ALL (top bar)
+══════════════════════════════════════════════════ */
+function saveAll() { save('menu', menuData); toast('All changes saved', 'success'); }
+
+/* ══════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+══════════════════════════════════════════════════ */
+function checkMobile() {
+  const isMobile = window.innerWidth <= 768;
+  document.getElementById('menuToggle').style.display = isMobile ? 'flex' : 'none';
+}
+window.addEventListener('resize', checkMobile);
+checkMobile();
+
+/* ══════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════ */
+renderDashboard();
+</script>
+</body>
+</html>
