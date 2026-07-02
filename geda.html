@@ -398,229 +398,296 @@ h1,h2,h3,.serif{font-family:'Playfair Display',serif}
     <div class="scene-zoom">
       <svg class="scene-svg" viewBox="0 0 1440 640" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
         <defs>
-          <!-- Sky gradient -->
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#4A9FD4"/>
-            <stop offset="100%" stop-color="#A8D8F0"/>
+          <linearGradient id="nsky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#04010F"/>
+            <stop offset="65%" stop-color="#130520"/>
+            <stop offset="100%" stop-color="#220A10"/>
           </linearGradient>
-          <!-- Thatched roof gradient -->
-          <linearGradient id="thatch" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#D4AA4A"/>
-            <stop offset="60%" stop-color="#A8842A"/>
-            <stop offset="100%" stop-color="#6B5018"/>
-          </linearGradient>
-          <!-- Stone wall -->
-          <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#C4A87A"/>
-            <stop offset="100%" stop-color="#A88C60"/>
-          </linearGradient>
-          <!-- Brick row light -->
-          <linearGradient id="brickA" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#D4B882"/>
-            <stop offset="100%" stop-color="#BCA06A"/>
-          </linearGradient>
-          <!-- Green garden panel -->
-          <linearGradient id="gp" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#3A8C32"/>
-            <stop offset="50%" stop-color="#2A6A24"/>
-            <stop offset="100%" stop-color="#1A4818"/>
-          </linearGradient>
-          <!-- Floor -->
-          <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#C8B890"/>
-            <stop offset="100%" stop-color="#A89870"/>
-          </linearGradient>
-          <!-- Globe lamp glow -->
-          <radialGradient id="lamp" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#FFF8DC" stop-opacity="0.95"/>
-            <stop offset="40%" stop-color="#FFE090" stop-opacity="0.4"/>
-            <stop offset="100%" stop-color="#FFE090" stop-opacity="0"/>
+          <radialGradient id="hg1" cx="50%" cy="75%" r="58%">
+            <stop offset="0%" stop-color="#FF8000" stop-opacity="0.70"/>
+            <stop offset="100%" stop-color="#FF8000" stop-opacity="0"/>
           </radialGradient>
-          <!-- Vignette overlay -->
+          <radialGradient id="hg2" cx="50%" cy="75%" r="58%">
+            <stop offset="0%" stop-color="#FF9500" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#FF9500" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="moonGl" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#FFFDE0" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#FFFDE0" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="flr" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#C8B48A"/>
+            <stop offset="100%" stop-color="#8A7A5A"/>
+          </linearGradient>
+          <linearGradient id="ta" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#D4A828"/>
+            <stop offset="55%" stop-color="#9A7218"/>
+            <stop offset="100%" stop-color="#5A3E08"/>
+          </linearGradient>
+          <linearGradient id="tb" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#BC9020"/>
+            <stop offset="100%" stop-color="#4A3008"/>
+          </linearGradient>
           <radialGradient id="vign" cx="50%" cy="50%" r="72%">
             <stop offset="20%" stop-color="transparent"/>
-            <stop offset="100%" stop-color="#000" stop-opacity="0.50"/>
+            <stop offset="100%" stop-color="#000" stop-opacity="0.58"/>
           </radialGradient>
-          <!-- Text readability overlay -->
           <linearGradient id="txtOvl" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"  stop-color="#0A0202" stop-opacity="0.88"/>
-            <stop offset="32%" stop-color="#0A0202" stop-opacity="0.60"/>
-            <stop offset="55%" stop-color="#0A0202" stop-opacity="0.12"/>
-            <stop offset="100%" stop-color="#0A0202" stop-opacity="0.25"/>
+            <stop offset="0%"  stop-color="#040110" stop-opacity="0.95"/>
+            <stop offset="36%" stop-color="#040110" stop-opacity="0.68"/>
+            <stop offset="58%" stop-color="#040110" stop-opacity="0.10"/>
+            <stop offset="100%" stop-color="#040110" stop-opacity="0.22"/>
           </linearGradient>
+          <radialGradient id="lampGl" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#FFE090" stop-opacity="0.95"/>
+            <stop offset="45%" stop-color="#FF9000" stop-opacity="0.30"/>
+            <stop offset="100%" stop-color="#FF9000" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="foodGl" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#CC4400" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#CC4400" stop-opacity="0"/>
+          </radialGradient>
         </defs>
 
-        <!-- ── SKY ── -->
-        <rect width="1440" height="260" fill="url(#sky)"/>
+        <!-- ── NIGHT SKY ── -->
+        <rect width="1440" height="640" fill="url(#nsky)"/>
 
-        <!-- Clouds -->
-        <g opacity="0.82">
-          <ellipse cx="820" cy="70" rx="130" ry="48" fill="#fff"/>
-          <ellipse cx="770" cy="84" rx="85" ry="38" fill="#fff"/>
-          <ellipse cx="900" cy="82" rx="90" ry="36" fill="#fff"/>
-        </g>
-        <g opacity="0.60">
-          <ellipse cx="280" cy="55" rx="100" ry="38" fill="#fff"/>
-          <ellipse cx="240" cy="68" rx="65" ry="30" fill="#fff"/>
-          <ellipse cx="355" cy="66" rx="75" ry="30" fill="#fff"/>
-        </g>
-        <g opacity="0.50">
-          <ellipse cx="1220" cy="48" rx="85" ry="32" fill="#fff"/>
-          <ellipse cx="1180" cy="60" rx="58" ry="26" fill="#fff"/>
-          <ellipse cx="1290" cy="58" rx="62" ry="26" fill="#fff"/>
-        </g>
-
-        <!-- ── THATCHED ROOF (central peak) ── -->
-        <polygon points="720,38 548,255 892,255" fill="url(#thatch)"/>
-        <!-- Thatch texture lines -->
-        <g stroke="#5A3C10" stroke-width="2" opacity="0.22">
-          <line x1="668" y1="52" x2="588" y2="252"/>
-          <line x1="692" y1="44" x2="628" y2="252"/>
-          <line x1="716" y1="40" x2="672" y2="252"/>
-          <line x1="740" y1="44" x2="720" y2="252"/>
-          <line x1="764" y1="52" x2="768" y2="252"/>
-          <line x1="790" y1="64" x2="818" y2="252"/>
-          <line x1="818" y1="80" x2="864" y2="252"/>
-        </g>
-        <!-- Roof eave beam -->
-        <rect x="530" y="248" width="380" height="14" rx="3" fill="#5A3C10"/>
-
-        <!-- Side roof extensions -->
-        <polygon points="0,155 0,268 500,268 165,155" fill="url(#thatch)" opacity="0.85"/>
-        <polygon points="1440,155 1440,268 940,268 1275,155" fill="url(#thatch)" opacity="0.85"/>
-        <rect y="260" width="510" height="12" rx="2" fill="#5A3C10" opacity="0.85"/>
-        <rect x="930" y="260" width="510" height="12" rx="2" fill="#5A3C10" opacity="0.85"/>
-
-        <!-- ── STONE BRICK WALL ── -->
-        <rect y="262" width="1440" height="308" fill="url(#wall)"/>
-        <!-- Brick courses (horizontal bands) -->
-        <g opacity="0.55">
-          <rect y="262" width="1440" height="28" fill="url(#brickA)"/>
-          <rect y="318" width="1440" height="26" fill="url(#brickA)"/>
-          <rect y="372" width="1440" height="26" fill="url(#brickA)"/>
-          <rect y="426" width="1440" height="26" fill="url(#brickA)"/>
-          <rect y="480" width="1440" height="26" fill="url(#brickA)"/>
-          <rect y="534" width="1440" height="26" fill="url(#brickA)"/>
-        </g>
-        <!-- Mortar lines -->
-        <g stroke="#8A6A3A" stroke-width="1.5" opacity="0.35">
-          <line x1="0" y1="290" x2="1440" y2="290"/>
-          <line x1="0" y1="318" x2="1440" y2="318"/>
-          <line x1="0" y1="344" x2="1440" y2="344"/>
-          <line x1="0" y1="372" x2="1440" y2="372"/>
-          <line x1="0" y1="398" x2="1440" y2="398"/>
-          <line x1="0" y1="426" x2="1440" y2="426"/>
-          <line x1="0" y1="452" x2="1440" y2="452"/>
-          <line x1="0" y1="480" x2="1440" y2="480"/>
-          <line x1="0" y1="506" x2="1440" y2="506"/>
-          <line x1="0" y1="534" x2="1440" y2="534"/>
-          <line x1="0" y1="560" x2="1440" y2="560"/>
-        </g>
-        <!-- Vertical brick joints (offset per row) -->
-        <g stroke="#8A6A3A" stroke-width="1" opacity="0.25">
-          <!-- Row 1 joints -->
-          <line x1="90"  y1="262" x2="90"  y2="290"/><line x1="210" y1="262" x2="210" y2="290"/>
-          <line x1="330" y1="262" x2="330" y2="290"/><line x1="450" y1="262" x2="450" y2="290"/>
-          <line x1="570" y1="262" x2="570" y2="290"/><line x1="690" y1="262" x2="690" y2="290"/>
-          <line x1="810" y1="262" x2="810" y2="290"/><line x1="930" y1="262" x2="930" y2="290"/>
-          <line x1="1050" y1="262" x2="1050" y2="290"/><line x1="1170" y1="262" x2="1170" y2="290"/>
-          <line x1="1290" y1="262" x2="1290" y2="290"/>
-          <!-- Row 2 joints (offset) -->
-          <line x1="150" y1="318" x2="150" y2="344"/><line x1="270" y1="318" x2="270" y2="344"/>
-          <line x1="390" y1="318" x2="390" y2="344"/><line x1="510" y1="318" x2="510" y2="344"/>
-          <line x1="630" y1="318" x2="630" y2="344"/><line x1="750" y1="318" x2="750" y2="344"/>
-          <line x1="870" y1="318" x2="870" y2="344"/><line x1="990" y1="318" x2="990" y2="344"/>
-          <line x1="1110" y1="318" x2="1110" y2="344"/><line x1="1230" y1="318" x2="1230" y2="344"/>
-          <line x1="1350" y1="318" x2="1350" y2="344"/>
+        <!-- Stars -->
+        <g fill="#fff">
+          <circle cx="105" cy="38" r="0.9" opacity="0.65"/><circle cx="228" cy="22" r="0.7" opacity="0.5"/>
+          <circle cx="362" cy="55" r="1.0" opacity="0.75"/><circle cx="498" cy="18" r="0.6" opacity="0.45"/>
+          <circle cx="634" cy="42" r="0.8" opacity="0.60"/><circle cx="768" cy="12" r="0.7" opacity="0.55"/>
+          <circle cx="892" cy="35" r="1.0" opacity="0.70"/><circle cx="1024" cy="20" r="0.6" opacity="0.50"/>
+          <circle cx="1158" cy="48" r="0.9" opacity="0.65"/><circle cx="1298" cy="28" r="0.7" opacity="0.45"/>
+          <circle cx="1395" cy="60" r="0.8" opacity="0.60"/>
+          <circle cx="55"  cy="82" r="0.7" opacity="0.50"/><circle cx="182" cy="105" r="0.9" opacity="0.65"/>
+          <circle cx="305" cy="78" r="0.6" opacity="0.45"/><circle cx="448" cy="118" r="1.0" opacity="0.70"/>
+          <circle cx="582" cy="88" r="0.7" opacity="0.55"/><circle cx="718" cy="72" r="0.8" opacity="0.60"/>
+          <circle cx="848" cy="98" r="0.6" opacity="0.45"/><circle cx="975" cy="65" r="1.0" opacity="0.70"/>
+          <circle cx="1105" cy="82" r="0.7" opacity="0.55"/><circle cx="1248" cy="110" r="0.9" opacity="0.65"/>
+          <circle cx="1378" cy="88" r="0.6" opacity="0.45"/>
+          <!-- Bright accent stars -->
+          <circle cx="152" cy="52" r="1.6" opacity="0.92"/><circle cx="472" cy="32" r="1.5" opacity="0.88"/>
+          <circle cx="812" cy="44" r="1.7" opacity="0.92"/><circle cx="1148" cy="36" r="1.4" opacity="0.85"/>
+          <circle cx="1342" cy="55" r="1.6" opacity="0.90"/>
+          <!-- Star twinkle hints -->
+          <circle cx="152" cy="52" r="4" opacity="0.12"/>
+          <circle cx="812" cy="44" r="5" opacity="0.10"/>
         </g>
 
-        <!-- ── GREEN GARDEN PANELS ── -->
-        <!-- Panel 1 -->
-        <rect x="370" y="268" width="100" height="294" fill="url(#gp)" rx="4"/>
-        <g fill="#1A5518" opacity="0.28">
-          <ellipse cx="420" cy="295" rx="28" ry="16"/><ellipse cx="400" cy="328" rx="22" ry="13"/>
-          <ellipse cx="438" cy="356" rx="25" ry="14"/><ellipse cx="412" cy="388" rx="24" ry="13"/>
-          <ellipse cx="435" cy="420" rx="22" ry="12"/><ellipse cx="405" cy="452" rx="25" ry="14"/>
-          <ellipse cx="432" cy="484" rx="23" ry="13"/><ellipse cx="410" cy="516" rx="24" ry="13"/>
-          <ellipse cx="438" cy="548" rx="20" ry="12"/>
-        </g>
-        <!-- Panel 2 -->
-        <rect x="680" y="268" width="100" height="294" fill="url(#gp)" rx="4"/>
-        <g fill="#1A5518" opacity="0.28">
-          <ellipse cx="730" cy="293" rx="28" ry="16"/><ellipse cx="710" cy="326" rx="22" ry="13"/>
-          <ellipse cx="748" cy="354" rx="25" ry="14"/><ellipse cx="722" cy="386" rx="24" ry="13"/>
-          <ellipse cx="745" cy="418" rx="22" ry="12"/><ellipse cx="715" cy="450" rx="25" ry="14"/>
-          <ellipse cx="742" cy="482" rx="23" ry="13"/><ellipse cx="720" cy="514" rx="24" ry="13"/>
-          <ellipse cx="748" cy="546" rx="20" ry="12"/>
-        </g>
-        <!-- Panel 3 -->
-        <rect x="988" y="268" width="100" height="294" fill="url(#gp)" rx="4"/>
-        <g fill="#1A5518" opacity="0.28">
-          <ellipse cx="1038" cy="295" rx="28" ry="16"/><ellipse cx="1018" cy="328" rx="22" ry="13"/>
-          <ellipse cx="1056" cy="356" rx="25" ry="14"/><ellipse cx="1030" cy="388" rx="24" ry="13"/>
-          <ellipse cx="1053" cy="420" rx="22" ry="12"/><ellipse cx="1023" cy="452" rx="25" ry="14"/>
-          <ellipse cx="1050" cy="484" rx="23" ry="13"/><ellipse cx="1028" cy="516" rx="24" ry="13"/>
-          <ellipse cx="1056" cy="548" rx="20" ry="12"/>
+        <!-- Moon -->
+        <circle cx="1268" cy="72" r="80" fill="url(#moonGl)"/>
+        <circle cx="1268" cy="72" r="42" fill="#FFFDE0" opacity="0.92"/>
+        <circle cx="1252" cy="66" r="39" fill="#150828" opacity="0.13"/>
+
+        <!-- Distant hills silhouette -->
+        <path d="M0,370 Q160,305 340,338 Q520,368 700,322 Q880,278 1060,315 Q1240,350 1440,318 L1440,520 L0,520 Z" fill="#0C0418" opacity="0.75"/>
+
+        <!-- ── TILE FLOOR ── -->
+        <rect y="510" width="1440" height="130" fill="url(#flr)"/>
+        <g stroke="#A09070" stroke-width="1" opacity="0.28">
+          <line x1="0" y1="538" x2="1440" y2="538"/><line x1="0" y1="568" x2="1440" y2="568"/>
+          <line x1="0" y1="598" x2="1440" y2="598"/><line x1="0" y1="628" x2="1440" y2="628"/>
+          <line x1="90"  y1="510" x2="90"  y2="640"/><line x1="180" y1="510" x2="180" y2="640"/>
+          <line x1="270" y1="510" x2="270" y2="640"/><line x1="360" y1="510" x2="360" y2="640"/>
+          <line x1="450" y1="510" x2="450" y2="640"/><line x1="540" y1="510" x2="540" y2="640"/>
+          <line x1="630" y1="510" x2="630" y2="640"/><line x1="720" y1="510" x2="720" y2="640"/>
+          <line x1="810" y1="510" x2="810" y2="640"/><line x1="900" y1="510" x2="900" y2="640"/>
+          <line x1="990" y1="510" x2="990" y2="640"/><line x1="1080" y1="510" x2="1080" y2="640"/>
+          <line x1="1170" y1="510" x2="1170" y2="640"/><line x1="1260" y1="510" x2="1260" y2="640"/>
+          <line x1="1350" y1="510" x2="1350" y2="640"/>
         </g>
 
-        <!-- ── iGADA SIGN (red block letters on wall) ── -->
-        <text x="500" y="430" font-family="Impact,Arial Black,sans-serif" font-size="120" fill="#CC1F1F" font-weight="900" letter-spacing="10" opacity="0.93">GADA</text>
-        <text x="514" y="468" font-family="Arial,sans-serif" font-size="22" fill="#CC1F1F" letter-spacing="6" opacity="0.82" font-weight="600">CAFE AND RESTAURANT</text>
+        <!-- ══════════════════════════════
+             HUT A — CENTRE-RIGHT (large)
+        ══════════════════════════════ -->
+        <!-- Interior amber glow -->
+        <ellipse cx="858" cy="415" rx="162" ry="118" fill="url(#hg1)"/>
 
-        <!-- ── iGADA CIRCULAR LOGO ── -->
-        <g transform="translate(470,330)">
-          <circle cx="0" cy="0" r="60" fill="#CC1F1F"/>
-          <circle cx="0" cy="0" r="60" fill="none" stroke="#fff" stroke-width="3.5"/>
-          <!-- Stylised G -->
-          <path d="M22 9 Q22,-22 0,-22 Q-22,-22 -22,0 Q-22,22 0,22 Q15,22 22,13 L22,4 L6,4 L6,11 L15,11 Q13,19 0,19 Q-18,19 -18,0 Q-18,-19 0,-19 Q14,-19 19,6 Z" fill="#fff" transform="scale(1.45)"/>
-          <!-- Bird head -->
-          <g transform="translate(32,-30)">
-            <circle cx="0" cy="0" r="13" fill="#fff"/>
-            <path d="M11,-3 L20,0 L11,3 Z" fill="#CC1F1F"/>
-            <circle cx="2" cy="-3" r="2.5" fill="#CC1F1F"/>
-            <path d="M-4,-13 Q-2,-18 0,-13 Q2,-18 4,-13 Q6,-18 8,-13" fill="#CC1F1F"/>
-          </g>
-          <text x="0" y="74" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#fff" font-weight="600" letter-spacing="1.5">cafe and restaurant</text>
-        </g>
+        <!-- Back pillars -->
+        <rect x="762" y="248" width="13" height="268" rx="4" fill="#301508" opacity="0.75"/>
+        <rect x="940" y="248" width="13" height="268" rx="4" fill="#301508" opacity="0.75"/>
+        <!-- Front pillars -->
+        <rect x="706" y="228" width="22" height="288" rx="5" fill="#4A2A0A"/>
+        <rect x="707" y="228" width="8" height="288" rx="3" fill="#6B3E14" opacity="0.45"/>
+        <rect x="980" y="228" width="22" height="288" rx="5" fill="#4A2A0A"/>
+        <rect x="981" y="228" width="8" height="288" rx="3" fill="#6B3E14" opacity="0.45"/>
+        <!-- Crossbeams -->
+        <rect x="704" y="264" width="300" height="14" rx="5" fill="#5A3410"/>
+        <rect x="704" y="340" width="300" height="11" rx="4" fill="#482808"/>
+        <rect x="704" y="418" width="300" height="10" rx="3" fill="#3A1E06" opacity="0.9"/>
+        <!-- Diagonal braces -->
+        <line x1="728" y1="266" x2="774" y2="342" stroke="#3A1E06" stroke-width="6" stroke-linecap="round" opacity="0.65"/>
+        <line x1="980" y1="266" x2="934" y2="342" stroke="#3A1E06" stroke-width="6" stroke-linecap="round" opacity="0.65"/>
 
-        <!-- ── WALL GLOBE LAMPS ── -->
-        <g transform="translate(140,352)">
-          <line x1="0" y1="-50" x2="55" y2="-50" stroke="#6B5030" stroke-width="5" stroke-linecap="round"/>
-          <circle cx="55" cy="-50" r="20" fill="#FFF8DC" opacity="0.92"/>
-          <circle cx="55" cy="-50" r="20" fill="none" stroke="#C8A840" stroke-width="2.5"/>
-          <ellipse cx="55" cy="-50" rx="65" ry="52" fill="url(#lamp)" opacity="0.55"/>
+        <!-- Thatched roof A -->
+        <polygon points="858,112 682,232 1034,232" fill="url(#ta)"/>
+        <polygon points="858,112 682,232 858,232" fill="#5A3C10" opacity="0.32"/>
+        <g stroke="#4A2C08" stroke-width="1.8" opacity="0.28">
+          <line x1="858" y1="116" x2="698" y2="230"/><line x1="858" y1="116" x2="730" y2="230"/>
+          <line x1="858" y1="116" x2="764" y2="230"/><line x1="858" y1="116" x2="798" y2="230"/>
+          <line x1="858" y1="116" x2="830" y2="230"/><line x1="858" y1="116" x2="858" y2="230"/>
+          <line x1="858" y1="116" x2="888" y2="230"/><line x1="858" y1="116" x2="920" y2="230"/>
+          <line x1="858" y1="116" x2="954" y2="230"/><line x1="858" y1="116" x2="988" y2="230"/>
+          <line x1="858" y1="116" x2="1018" y2="230"/>
         </g>
-        <g transform="translate(1260,352)">
-          <line x1="0" y1="-50" x2="-55" y2="-50" stroke="#6B5030" stroke-width="5" stroke-linecap="round"/>
-          <circle cx="-55" cy="-50" r="20" fill="#FFF8DC" opacity="0.92"/>
-          <circle cx="-55" cy="-50" r="20" fill="none" stroke="#C8A840" stroke-width="2.5"/>
-          <ellipse cx="-55" cy="-50" rx="65" ry="52" fill="url(#lamp)" opacity="0.55"/>
-        </g>
+        <!-- Eave beam -->
+        <rect x="676" y="226" width="364" height="13" rx="4" fill="#3A2008"/>
+        <!-- Roof tip -->
+        <circle cx="858" cy="112" r="13" fill="#7A5818"/>
+        <circle cx="858" cy="112" r="7" fill="#D4A020"/>
 
-        <!-- ── GOLD VELVET ROPE STANCHIONS ── -->
-        <!-- Left pair -->
-        <g transform="translate(200,560)">
-          <rect x="-7" y="-88" width="14" height="88" rx="4" fill="#C9A830"/>
-          <ellipse cx="0" cy="-88" rx="14" ry="9" fill="#E8C840"/>
-          <ellipse cx="0" cy="0" rx="28" ry="9" fill="#A88C20"/>
+        <!-- String lights A -->
+        <path d="M718,267 Q770,285 820,273 Q845,266 858,272" fill="none" stroke="#8B6010" stroke-width="1.5" opacity="0.55"/>
+        <path d="M998,267 Q946,285 896,273 Q871,266 858,272" fill="none" stroke="#8B6010" stroke-width="1.5" opacity="0.55"/>
+        <g fill="#FFE090" opacity="0.92">
+          <circle cx="738" cy="283" r="5"/><circle cx="772" cy="277" r="5"/>
+          <circle cx="806" cy="271" r="5"/><circle cx="978" cy="283" r="5"/>
+          <circle cx="944" cy="277" r="5"/><circle cx="910" cy="271" r="5"/>
         </g>
-        <g transform="translate(480,555)">
-          <rect x="-7" y="-88" width="14" height="88" rx="4" fill="#C9A830"/>
-          <ellipse cx="0" cy="-88" rx="14" ry="9" fill="#E8C840"/>
-          <ellipse cx="0" cy="0" rx="28" ry="9" fill="#A88C20"/>
-        </g>
-        <!-- Red rope -->
-        <path d="M200,477 Q340,500 480,472" fill="none" stroke="#CC1F1F" stroke-width="6" stroke-linecap="round" opacity="0.88"/>
+        <!-- Hanging centre lamp -->
+        <line x1="858" y1="267" x2="858" y2="322" stroke="#8B6010" stroke-width="2"/>
+        <circle cx="858" cy="330" r="17" fill="#FFE090" opacity="0.96"/>
+        <circle cx="858" cy="330" r="14" fill="#FFD040"/>
+        <ellipse cx="858" cy="330" rx="60" ry="45" fill="url(#lampGl)"/>
 
-        <!-- ── FLOOR / PAVEMENT ── -->
-        <rect y="560" width="1440" height="80" fill="url(#floor)"/>
-        <g stroke="#B0A080" stroke-width="1.2" opacity="0.35">
-          <line x1="0" y1="580" x2="1440" y2="580"/>
-          <line x1="0" y1="608" x2="1440" y2="608"/>
-          <line x1="240" y1="560" x2="240" y2="640"/><line x1="480" y1="560" x2="480" y2="640"/>
-          <line x1="720" y1="560" x2="720" y2="640"/><line x1="960" y1="560" x2="960" y2="640"/>
-          <line x1="1200" y1="560" x2="1200" y2="640"/>
+        <!-- Table A -->
+        <ellipse cx="858" cy="482" rx="92" ry="24" fill="#3A2010" opacity="0.9"/>
+        <rect x="818" y="476" width="80" height="22" rx="3" fill="#2A1608"/>
+        <!-- Ethiopian food platter (beyaynetu on injera) -->
+        <ellipse cx="858" cy="470" rx="78" ry="20" fill="#7A5030" opacity="0.95"/><!-- clay plate -->
+        <ellipse cx="858" cy="467" rx="70" ry="17" fill="#C8986A"/><!-- injera -->
+        <ellipse cx="835" cy="460" rx="26" ry="10" fill="#CC2200" opacity="0.92"/><!-- kitfo red -->
+        <ellipse cx="876" cy="458" rx="20" ry="9" fill="#8B4513" opacity="0.88"/><!-- tibs brown -->
+        <ellipse cx="856" cy="455" rx="16" ry="7" fill="#2E7D32" opacity="0.85"/><!-- greens -->
+        <ellipse cx="840" cy="454" rx="11" ry="5" fill="#D4A020" opacity="0.82"/><!-- yellow pulse -->
+        <!-- Herb sprig -->
+        <ellipse cx="860" cy="451" rx="7" ry="3" fill="#4CAF50" opacity="0.9"/>
+        <ellipse cx="872" cy="449" rx="5" ry="3" fill="#388E3C" opacity="0.9"/>
+
+        <!-- ══════════════════════════════
+             HUT B — LEFT
+        ══════════════════════════════ -->
+        <ellipse cx="428" cy="432" rx="118" ry="95" fill="url(#hg2)" opacity="0.82"/>
+        <!-- Pillars -->
+        <rect x="318" y="252" width="18" height="265" rx="4" fill="#4A2A0A"/>
+        <rect x="535" y="252" width="18" height="265" rx="4" fill="#4A2A0A"/>
+        <!-- Crossbeams -->
+        <rect x="316" y="282" width="239" height="12" rx="4" fill="#5A3410"/>
+        <rect x="316" y="358" width="239" height="10" rx="3" fill="#482808" opacity="0.9"/>
+        <!-- Diagonal braces -->
+        <line x1="336" y1="284" x2="372" y2="360" stroke="#3A1E06" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+        <line x1="535" y1="284" x2="499" y2="360" stroke="#3A1E06" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+        <!-- Thatched roof B -->
+        <polygon points="428,152 300,258 558,258" fill="url(#tb)"/>
+        <polygon points="428,152 300,258 428,258" fill="#5A3C10" opacity="0.28"/>
+        <g stroke="#4A2C08" stroke-width="1.5" opacity="0.25">
+          <line x1="428" y1="156" x2="314" y2="256"/><line x1="428" y1="156" x2="350" y2="256"/>
+          <line x1="428" y1="156" x2="390" y2="256"/><line x1="428" y1="156" x2="428" y2="256"/>
+          <line x1="428" y1="156" x2="468" y2="256"/><line x1="428" y1="156" x2="508" y2="256"/>
+          <line x1="428" y1="156" x2="543" y2="256"/>
         </g>
+        <rect x="294" y="252" width="270" height="11" rx="3" fill="#3A2008"/>
+        <circle cx="428" cy="152" r="10" fill="#7A5818"/>
+        <circle cx="428" cy="152" r="5" fill="#C8A030"/>
+        <!-- Lamp B -->
+        <line x1="428" y1="285" x2="428" y2="332" stroke="#8B6010" stroke-width="1.5"/>
+        <circle cx="428" cy="340" r="14" fill="#FFE090" opacity="0.95"/>
+        <circle cx="428" cy="340" r="11" fill="#FFD040"/>
+        <ellipse cx="428" cy="340" rx="48" ry="36" fill="url(#lampGl)"/>
+        <!-- String lights B -->
+        <path d="M330,284 Q360,296 390,289 Q412,283 428,289" fill="none" stroke="#8B6010" stroke-width="1.5" opacity="0.5"/>
+        <path d="M526,284 Q496,296 466,289 Q444,283 428,289" fill="none" stroke="#8B6010" stroke-width="1.5" opacity="0.5"/>
+        <g fill="#FFE090" opacity="0.88"><circle cx="348" cy="294" r="4"/><circle cx="372" cy="290" r="4"/><circle cx="508" cy="294" r="4"/><circle cx="484" cy="290" r="4"/></g>
+        <!-- Table B with clay pot -->
+        <ellipse cx="428" cy="490" rx="72" ry="19" fill="#3A2010" opacity="0.85"/>
+        <!-- Clay pot (deep curved bowl) -->
+        <ellipse cx="418" cy="478" rx="30" ry="11" fill="#7A5030" opacity="0.95"/><!-- pot rim -->
+        <path d="M388,476 Q388,500 418,502 Q448,500 448,476" fill="#8B4513" opacity="0.9"/><!-- pot body -->
+        <ellipse cx="418" cy="476" rx="26" ry="9" fill="#A0522D"/><!-- stew surface -->
+        <ellipse cx="418" cy="474" rx="20" ry="7" fill="#CC2200" opacity="0.88"/><!-- kitfo -->
+        <!-- Herb garnish on pot -->
+        <ellipse cx="425" cy="471" rx="6" ry="3" fill="#4CAF50" opacity="0.9"/>
+        <!-- Side injera roll -->
+        <ellipse cx="448" cy="484" rx="16" ry="5" fill="#C8986A" opacity="0.8"/>
+        <ellipse cx="448" cy="481" rx="14" ry="4" fill="#D4AA78" opacity="0.75"/>
+
+        <!-- ══════════════════════════════
+             HUT C — RIGHT
+        ══════════════════════════════ -->
+        <ellipse cx="1222" cy="432" rx="110" ry="90" fill="url(#hg2)" opacity="0.78"/>
+        <!-- Pillars -->
+        <rect x="1118" y="258" width="18" height="258" rx="4" fill="#4A2A0A"/>
+        <rect x="1324" y="258" width="18" height="258" rx="4" fill="#4A2A0A"/>
+        <!-- Crossbeams -->
+        <rect x="1116" y="288" width="228" height="11" rx="4" fill="#5A3410"/>
+        <rect x="1116" y="362" width="228" height="10" rx="3" fill="#482808" opacity="0.9"/>
+        <!-- Diagonal braces -->
+        <line x1="1136" y1="290" x2="1170" y2="364" stroke="#3A1E06" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+        <line x1="1324" y1="290" x2="1290" y2="364" stroke="#3A1E06" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+        <!-- Thatched roof C -->
+        <polygon points="1222,162 1104,264 1348,264" fill="url(#tb)"/>
+        <polygon points="1222,162 1104,264 1222,264" fill="#5A3C10" opacity="0.28"/>
+        <g stroke="#4A2C08" stroke-width="1.5" opacity="0.25">
+          <line x1="1222" y1="166" x2="1112" y2="262"/><line x1="1222" y1="166" x2="1148" y2="262"/>
+          <line x1="1222" y1="166" x2="1186" y2="262"/><line x1="1222" y1="166" x2="1222" y2="262"/>
+          <line x1="1222" y1="166" x2="1260" y2="262"/><line x1="1222" y1="166" x2="1298" y2="262"/>
+          <line x1="1222" y1="166" x2="1335" y2="262"/>
+        </g>
+        <rect x="1098" y="258" width="256" height="11" rx="3" fill="#3A2008"/>
+        <circle cx="1222" cy="162" r="10" fill="#7A5818"/>
+        <circle cx="1222" cy="162" r="5" fill="#C8A030"/>
+        <!-- Lamp C -->
+        <line x1="1222" y1="291" x2="1222" y2="338" stroke="#8B6010" stroke-width="1.5"/>
+        <circle cx="1222" cy="346" r="14" fill="#FFE090" opacity="0.95"/>
+        <circle cx="1222" cy="346" r="11" fill="#FFD040"/>
+        <ellipse cx="1222" cy="346" rx="46" ry="35" fill="url(#lampGl)"/>
+        <!-- String lights C -->
+        <path d="M1130,290 Q1160,302 1192,295 Q1210,289 1222,295" fill="none" stroke="#8B6010" stroke-width="1.5" opacity="0.5"/>
+        <path d="M1314,290 Q1284,302 1252,295 Q1234,289 1222,295" fill="none" stroke="#8B6010" stroke-width="1.5" opacity="0.5"/>
+        <g fill="#FFE090" opacity="0.88"><circle cx="1148" cy="300" r="4"/><circle cx="1172" cy="295" r="4"/><circle cx="1296" cy="300" r="4"/><circle cx="1272" cy="295" r="4"/></g>
+        <!-- Table C with food -->
+        <ellipse cx="1222" cy="490" rx="70" ry="18" fill="#3A2010" opacity="0.85"/>
+        <ellipse cx="1222" cy="478" rx="58" ry="15" fill="#7A5030" opacity="0.9"/><!-- plate -->
+        <ellipse cx="1222" cy="475" rx="52" ry="13" fill="#C8986A"/><!-- injera -->
+        <ellipse cx="1208" cy="469" rx="20" ry="8" fill="#CC2200" opacity="0.88"/>
+        <ellipse cx="1236" cy="467" rx="16" ry="7" fill="#8B4513" opacity="0.85"/>
+        <ellipse cx="1220" cy="464" rx="12" ry="5" fill="#2E7D32" opacity="0.82"/>
+
+        <!-- ══ FOREGROUND FOOD PLATTER (bottom right) ══ -->
+        <!-- Large beyaynetu serving tray -->
+        <ellipse cx="980" cy="578" rx="175" ry="46" fill="#7A5030" opacity="0.88"/>
+        <ellipse cx="980" cy="572" rx="162" ry="38" fill="#C8986A"/><!-- injera base -->
+        <!-- Multiple stew piles -->
+        <ellipse cx="942" cy="560" rx="52" ry="19" fill="#CC2200" opacity="0.92"/><!-- kitfo -->
+        <ellipse cx="1018" cy="555" rx="42" ry="17" fill="#8B4513" opacity="0.88"/><!-- tibs -->
+        <ellipse cx="978" cy="565" rx="34" ry="13" fill="#2E7D32" opacity="0.85"/><!-- greens -->
+        <ellipse cx="950" cy="552" rx="24" ry="10" fill="#D4A020" opacity="0.82"/><!-- shiro yellow -->
+        <ellipse cx="1005" cy="558" rx="20" ry="8" fill="#A0522D" opacity="0.80"/><!-- lamb -->
+        <ellipse cx="958" cy="549" rx="14" ry="6" fill="#CC3300" opacity="0.78"/><!-- spicy -->
+        <!-- Herb garnish -->
+        <ellipse cx="985" cy="547" rx="9" ry="4" fill="#4CAF50" opacity="0.92"/>
+        <ellipse cx="999" cy="544" rx="7" ry="3" fill="#388E3C" opacity="0.88"/>
+        <ellipse cx="973" cy="544" rx="6" ry="3" fill="#66BB6A" opacity="0.85"/>
+
+        <!-- Salata bowl (fresh salad) -->
+        <ellipse cx="780" cy="572" rx="68" ry="22" fill="#4A5020" opacity="0.85"/><!-- bowl -->
+        <ellipse cx="780" cy="567" rx="60" ry="18" fill="#558B2F" opacity="0.82"/><!-- greens -->
+        <ellipse cx="772" cy="562" rx="18" ry="7" fill="#E53935" opacity="0.80"/><!-- tomato -->
+        <ellipse cx="792" cy="560" rx="14" ry="6" fill="#E53935" opacity="0.75"/><!-- tomato -->
+        <ellipse cx="780" cy="558" rx="12" ry="5" fill="#F5F5F5" opacity="0.70"/><!-- onion rings -->
+        <ellipse cx="765" cy="556" rx="8" ry="3" fill="#F5F5F5" opacity="0.65"/>
+
+        <!-- Green potted plants -->
+        <rect x="632" y="462" width="16" height="55" rx="3" fill="#3A1E06"/>
+        <ellipse cx="640" cy="458" rx="34" ry="40" fill="#1B5E20" opacity="0.82"/>
+        <ellipse cx="625" cy="452" rx="22" ry="27" fill="#2E7D32" opacity="0.72"/>
+        <ellipse cx="655" cy="450" rx="20" ry="25" fill="#388E3C" opacity="0.68"/>
+
+        <rect x="1082" y="468" width="15" height="48" rx="3" fill="#3A1E06"/>
+        <ellipse cx="1090" cy="464" rx="30" ry="36" fill="#1B5E20" opacity="0.78"/>
+        <ellipse cx="1076" cy="458" rx="19" ry="24" fill="#2E7D32" opacity="0.68"/>
+        <ellipse cx="1104" cy="455" rx="17" ry="22" fill="#388E3C" opacity="0.65"/>
 
         <!-- ══ OVERLAYS ══ -->
         <rect width="1440" height="640" fill="url(#vign)"/>
