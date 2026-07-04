@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Geda Restaurant — Menu</title>
+<title>Al Hayat Cafeteria — Menu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600&family=Noto+Serif+Ethiopic:wght@400;600;700&display=swap" rel="stylesheet">
@@ -16,11 +16,11 @@
   --gold:     #C9993A;
   --gold-lt:  #E8C97A;
   --espresso: #1A0808;
-  --cream:    #FEFCFC;
+  --cream:    #FFE8E8;
   --card:     #FFFFFF;
   --text:     #1A0808;
   --muted:    #6A4040;
-  --border:   #E8D0D0;
+  --border:   #F0C0C0;
 
   --font-serif:  'Playfair Display', Georgia, serif;
   --font-body:   'Inter', system-ui, sans-serif;
@@ -30,7 +30,7 @@
 /* ── Reset ──────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-body { background: #d0ccc8; font-family: var(--font-body); }
+body { background: #f5c0c0; font-family: var(--font-body); }
 
 /* ── Print button (hidden on print) ────────────────────────────── */
 .print-bar {
@@ -437,7 +437,7 @@ body { background: #d0ccc8; font-family: var(--font-body); }
 
 <!-- ── Print bar (screen only) ── -->
 <div class="print-bar">
-  <span>Geda Restaurant · Menu Book · A4</span>
+  <span>Al Hayat Cafeteria · Menu Book · A4</span>
   <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
 </div>
 
@@ -459,8 +459,8 @@ body { background: #d0ccc8; font-family: var(--font-body); }
       </div>
 
       <div class="cover-logo">
-        <div class="cover-logo-text">GEDA</div>
-        <div class="cover-logo-amh">ጌዳ</div>
+        <div class="cover-logo-text" style="font-size:16px;letter-spacing:.04em">AL HAYAT</div>
+        <div class="cover-logo-amh">አል ሃያት</div>
       </div>
 
       <!-- Ethiopian injera plate SVG illustration -->
@@ -483,9 +483,9 @@ body { background: #d0ccc8; font-family: var(--font-body); }
       </svg>
 
       <div class="cover-title">
-        <h1>Geda</h1>
-        <div class="title-amh">ጌዳ ምግብ ቤት</div>
-        <div class="subtitle">Restaurant &amp; Cuisine</div>
+        <h1 style="font-size:40px">Al Hayat Cafeteria</h1>
+        <div class="title-amh">አል ሃያት ካፌቴሪያ</div>
+        <div class="subtitle">Authentic Ethiopian Cuisine</div>
       </div>
 
       <div class="cover-divider"><span class="cover-divider-star">✦</span></div>
@@ -510,7 +510,7 @@ body { background: #d0ccc8; font-family: var(--font-body); }
       </div>
 
       <div class="cover-footer">
-        <p>AJMAN, UAE &nbsp;·&nbsp; EST. 2012 &nbsp;·&nbsp; HALAL CERTIFIED</p>
+        <p>AL HAYAT CAFETERIA &nbsp;·&nbsp; AJMAN, UAE &nbsp;·&nbsp; HALAL CERTIFIED</p>
       </div>
     </div>
   </div>
@@ -546,8 +546,11 @@ function pageFrame() {
 }
 
 function itemCard(item, icon) {
-  const imgHTML = item.image
-    ? `<img class="item-img" src="images/${item.image}" alt="${item.nameOromo}" onerror="this.outerHTML='<div class=\\'item-img-placeholder\\'>${icon}</div>'">`
+  const src = item.image
+    ? (item.image.startsWith('http') ? item.image : `images/${item.image}`)
+    : null;
+  const imgHTML = src
+    ? `<img class="item-img" src="${src}" alt="${item.nameOromo}" onerror="this.outerHTML='<div class=\\'item-img-placeholder\\'>${icon}</div>'">`
     : `<div class="item-img-placeholder">${icon}</div>`;
   const descHTML = (item.descOromo || item.descAmharic)
     ? `<div class="item-desc">${item.descOromo || item.descAmharic}</div>` : '';
@@ -578,12 +581,12 @@ function itemCard(item, icon) {
           <div class="cat-icon">${cat.icon}</div>
           <div class="cat-name-oromo">${cat.nameOromo}</div>
           <div class="cat-name-amh">${cat.nameAmharic}</div>
-          <div class="logo-sm">Geda Restaurant · Ajman, UAE</div>
+          <div class="logo-sm">Al Hayat Cafeteria · Ajman, UAE</div>
         </div>
         <div class="items-grid">
           ${cat.items.map(i => itemCard(i, cat.icon)).join('')}
         </div>
-        <div class="page-footer">Geda Restaurant &nbsp;·&nbsp; Ajman, UAE &nbsp;·&nbsp; Halal Certified</div>
+        <div class="page-footer">Al Hayat Cafeteria &nbsp;·&nbsp; Ajman, UAE &nbsp;·&nbsp; Halal Certified</div>
       </div>
     </div>`;
 })();
@@ -600,12 +603,12 @@ function itemCard(item, icon) {
           <div class="cat-icon">${cat.icon}</div>
           <div class="cat-name-oromo">${cat.nameOromo}</div>
           <div class="cat-name-amh">${cat.nameAmharic}</div>
-          <div class="logo-sm">Geda Restaurant · Ajman, UAE</div>
+          <div class="logo-sm">Al Hayat Cafeteria · Ajman, UAE</div>
         </div>
         <div class="items-grid">
           ${cat.items.map(i => itemCard(i, cat.icon)).join('')}
         </div>
-        <div class="page-footer">Geda Restaurant &nbsp;·&nbsp; Ajman, UAE &nbsp;·&nbsp; Halal Certified</div>
+        <div class="page-footer">Al Hayat Cafeteria &nbsp;·&nbsp; Ajman, UAE &nbsp;·&nbsp; Halal Certified</div>
       </div>
     </div>`;
 })();
@@ -630,7 +633,7 @@ function itemCard(item, icon) {
           <div class="cat-icon">${juice.icon}</div>
           <div class="cat-name-oromo">${juice.nameOromo}</div>
           <div class="cat-name-amh">${juice.nameAmharic}</div>
-          <div class="logo-sm">Geda Restaurant · Ajman, UAE</div>
+          <div class="logo-sm">Al Hayat Cafeteria · Ajman, UAE</div>
         </div>
         <div class="items-grid">
           ${juice.items.map(i => itemCard(i, juice.icon)).join('')}
@@ -647,7 +650,7 @@ function itemCard(item, icon) {
           ${drinksCards}
         </div>
 
-        <div class="page-footer">Geda Restaurant &nbsp;·&nbsp; Ajman, UAE &nbsp;·&nbsp; Halal Certified</div>
+        <div class="page-footer">Al Hayat Cafeteria &nbsp;·&nbsp; Ajman, UAE &nbsp;·&nbsp; Halal Certified</div>
       </div>
     </div>`;
 })();
@@ -686,7 +689,7 @@ function itemCard(item, icon) {
 
   document.getElementById('back-inner').innerHTML = `
     <div class="back-logo">
-      <div class="back-logo-text">GEDA</div>
+      <div class="back-logo-text" style="font-size:13px;letter-spacing:.03em">AL HAYAT</div>
     </div>
 
     <div class="back-thanks">
